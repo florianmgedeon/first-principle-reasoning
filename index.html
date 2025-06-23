@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>First Principles Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
+    h2 { margin-top: 30px; }
+    textarea { width: 100%; min-height: 60px; margin: 5px 0; padding: 6px; font-size: 14px; }
+    button { margin-right: 10px; margin-top: 10px; padding: 6px 12px; font-size: 14px; }
+    .hidden { display: none; }
+    .truth, .assumption { margin-bottom: 10px; }
+    #outputText { white-space: pre-wrap; background: #fff; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>First Principles Reasoning Tool</h1>
+
+  <div id="step1">
+    <h2>1. Define your problem statement</h2>
+    <textarea id="problem" placeholder="Clearly state the problem..."></textarea>
+    <button id="doneProblem">Next</button>
+  </div>
+
+  <div id="step2" class="hidden">
+    <h2>2. Deconstruct underlying assumptions</h2>
+    <div id="assumptions"></div>
+    <button id="addAssumption">＋ Add Assumption</button>
+    <button id="doneAssumptions">Done</button>
+  </div>
+
+  <div id="step3" class="hidden">
+    <h2>3. Distill core truths</h2>
+    <div id="truths"></div>
+    <button id="doneTruths">Done</button>
+  </div>
+
+  <div id="step4" class="hidden">
+    <h2>4. Design a solution</h2>
+    <p><strong>Problem:</strong> <span id="displayProblem"></span></p>
+    <div id="displayTruths"></div>
+    <textarea id="solution" placeholder="What solution can you design?"></textarea>
+    <button id="doneSolution">Done</button>
+  </div>
+
+  <div id="finalOutput" class="hidden">
+    <h2>Your Reasoning</h2>
+    <div id="outputText"></div>
+    <button id="copyText">Copy</button>
+    <button id="reset">Reset</button>
+  </div>
+
+  <script>
+    const assumptionsDiv = document.getElementById("assumptions");
+    const truthsDiv = document.getElementById("truths");
+    const displayTruthsDiv = document.getElementById("displayTruths");
+
+    const problemInput = document.getElementById("problem");
+    const displayProblem = document.getElementById("displayProblem");
+    const outputText = document.getElementById("outputText");
+
+    const assumptionInputs = [];
+    const truthInputs = [];
+
+    document.getElementById("doneProblem").addEventListener("click", () => {
+      if (!problemInput.value.trim()) return alert("Please enter the problem.");
+      document.getElementById("step1").classList.add("hidden");
+      document.getElementById("step2").classList.remove("hidden");
+    });
+
+    document.getElementById("addAssumption").addEventListener("click", () => {
+      const area = document.createElement("textarea");
+      area.className = "assumption";
+      assumptionsDiv.appendChild(area);
+      assumptionInputs.push(area);
+    });
+
+    document.getElementById("doneAssumptions").addEventListener("click", () => {
+      if (assumptionInputs.length === 0) return alert("Please add at least one assumption.");
+
+      document.getElementById("step2").classList.add("hidden");
+      document.getElementById("step3").classList.remove("hidden");
+
+      assumptionInputs.forEach((input, i) => {
+        const val = input.value.trim();
+        if (!val) return;
+
+        const container = document.createElement("div");
+        container.className = "truth";
+        const label = document.createElement("p");
+        label.textContent = `Assumption ${i + 1}: ${val}`;
+        const truthInput = document.createElement("textarea");
+        container.appendChild(label);
+        container.appendChild(truthInput);
+        truthsDiv.appendChild(container);
+        truthInputs.push(truthInput);
+      });
+    });
+
+    document.getElementById("doneTruths").addEventListener("click", () => {
+      document.getElementById("step3").classList.add("hidden");
+      document.getElementById("step4").classList.remove("hidden");
+
+      displayProblem.textContent = problemInput.value.trim();
+
+      assumptionInputs.forEach((assumption, i) => {
+        const aText = assumption.value.trim();
+        const tText = truthInputs[i].value.trim();
+        const item = document.createElement("p");
+        item.textContent = `${aText} → ${tText}`;
+        displayTruthsDiv.appendChild(item);
+      });
+    });
+
+    document.getElementById("doneSolution").addEventListener("click", () => {
+      const solution = document.getElementById("solution").value.trim();
+      if (!solution) return alert("Please write your solution.");
+
+      const fullText =
+        `Problem:\n${problemInput.value.trim()}\n\n` +
+        `Assumptions and Truths:\n` +
+        assumptionInputs.map((a, i) => `- ${a.value.trim()} → ${truthInputs[i].value.trim()}`).join("\n") +
+        `\n\nSolution:\n${solution}`;
+
+      outputText.textContent = fullText;
+      document.getElementById("step4").classList.add("hidden");
+      document.getElementById("finalOutput").classList.remove("hidden");
+    });
+
+    document.getElementById("copyText").addEventListener("click", () => {
+      navigator.clipboard.writeText(outputText.textContent || "");
+      alert("Copied to clipboard!");
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
